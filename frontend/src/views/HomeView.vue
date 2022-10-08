@@ -1,16 +1,16 @@
 <template>
-  <hello-world />
+  <students-table />
 </template>
 
 <script>
-import HelloWorld from '../components/HelloWorld'
+import StudentsTable from '../components/TableStudents.vue'
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: 'Home',
 
   components: {
-    HelloWorld,
+    StudentsTable,
   },
 }
 </script>
