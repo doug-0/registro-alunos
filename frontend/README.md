@@ -1,4 +1,4 @@
-# registro-alunos
+# frontend
 
 ## Project setup
 ```
