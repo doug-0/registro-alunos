@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,8 @@ builder.Services.AddDbContext<StudentsContext>(options =>
 {
   options.UseNpgsql(builder.Configuration.GetConnectionString("Default"));
 });
+
+builder.Services.AddScoped<IStudentsRepository, StudentsRepository>();
 
 var app = builder.Build();
 
