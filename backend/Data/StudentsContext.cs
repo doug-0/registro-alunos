@@ -16,6 +16,7 @@ namespace backend.Data
       modelBuilder.Entity<Students>().ToTable("tb_estudantes");
       modelBuilder.Entity<Students>().HasKey(i => i.Id);
       modelBuilder.Entity<Students>().Property(i => i.Id).HasColumnName("id").ValueGeneratedOnAdd();
+      modelBuilder.Seed();
     }
   }
 }
