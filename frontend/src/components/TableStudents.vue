@@ -70,6 +70,7 @@
 
 <script>
 import Students from '../services/students'
+import { cpf } from 'cpf-cnpj-validator'
 
 export default {
   async mounted() {
@@ -142,9 +143,11 @@ export default {
     },
 
     deleteItemConfirm() {
-      this.deletedStudent(this.deletedItem.id)
+      this.deletedStudent(this.deletedItem.id, this.deletedItem)
 
       this.closeDelete()
+
+      return this.showAlert('delete');
     },
 
     close() {
@@ -161,11 +164,13 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
       })
-      return this.showAlert('delete');
     },
 
     save() {
-      if (this.editedItem.name === '' || this.editedItem.email === '' || this.editedItem.cpf === '') {
+      // eslint-disable-next-line no-useless-escape
+      const regexEmail = /^[a-z0-9._]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i;
+
+      if (this.editedItem.name === '' || this.editedItem.cpf.length !== 11 || !regexEmail.test(this.editedItem.email)) {
         return this.showAlert('warning');
       }
 
@@ -173,7 +178,7 @@ export default {
         const updatedStudent = {
           Name: this.editedItem.name,
           Email: this.editedItem.email,
-          CPF: this.editedItem.cpf,
+          CPF: cpf.format(this.editedItem.cpf),
         }
 
         this.updateStudent(updatedStudent, this.editedItem.id);
@@ -181,8 +186,9 @@ export default {
         const newStudent = {
           Name: this.editedItem.name,
           Email: this.editedItem.email,
-          CPF: this.editedItem.cpf,
+          CPF: cpf.format(this.editedItem.cpf),
         }
+
         this.createStudent(newStudent)
       }
       this.close()
@@ -205,7 +211,7 @@ export default {
         case 'warning':
           return this.$swal({
             title: 'Opa!',
-            text: 'Verifique se todos os campos estão corretos!',
+            text: 'Verifique se todos os campos estão corretos! Nome, e-mail e CPF (11 digitos)!',
             icon: 'warning',
           });
         case 'delete':
@@ -250,10 +256,15 @@ export default {
       }
     },
 
-    async deletedStudent(id) {
+    async deletedStudent(id, student) {
+      const data = {
+        Name: student.name,
+        Email: student.email,
+        CPF: student.cpf,
+      }
 
       try {
-        await Students.deletedStudent(id);
+        await Students.deletedStudent(id, data);
 
         this.showAlert('delete');
         setTimeout(() => this.reaload(), 950)
