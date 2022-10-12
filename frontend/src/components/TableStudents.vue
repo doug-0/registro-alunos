@@ -1,14 +1,14 @@
 <template>
-  <v-data-table :headers="headers" :items="students" sort-by="id" class="elevation-1">
+  <v-data-table :headers="headers" :items="students" sort-by="ra" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>Lista de Alunos</v-toolbar-title>
+        <v-toolbar-title>Módulo Acadêmico</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-              Adicionar novo registro
+              Cadastrar Aluno
             </v-btn>
           </template>
           <v-card>
@@ -19,6 +19,11 @@
             <v-card-text>
               <v-container>
                 <v-row>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field v-model="editedItem.ra" label="Registro Acadêmico" :disabled="disableFild"
+                      type="number">
+                    </v-text-field>
+                  </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.name" label="Nome do aluno">
                     </v-text-field>
@@ -49,8 +54,8 @@
             <v-card-title class="text-h6">Você tem certeza que quer excluir esse item?</v-card-title>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete">Não, quero voltar!</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Sim, exclua esse item!</v-btn>
+              <v-btn color="blue darken-1" text @click="closeDelete">Cancelar</v-btn>
+              <v-btn color="blue darken-1" text @click="deleteItemConfirm">Confirmar</v-btn>
               <v-spacer></v-spacer>
             </v-card-actions>
           </v-card>
@@ -91,7 +96,7 @@ export default {
         text: 'Registro Acadêmico',
         align: 'start',
         sortable: true,
-        value: 'id',
+        value: 'ra',
       },
       { text: 'Nome', value: 'name' },
       { text: 'E-mail', value: 'email' },
@@ -101,6 +106,7 @@ export default {
     students: [],
     editedIndex: -1,
     editedItem: {
+      ra: '',
       name: '',
       email: '',
       cpf: '',
@@ -111,11 +117,12 @@ export default {
     },
     deletedItem: '',
     renderComponent: false,
+    disableFild: false,
   }),
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'Novo Registro' : 'Editar Registro'
+      return this.editedIndex === -1 ? 'Cadastro do Aluno' : 'Editar Registro'
     },
   },
 
@@ -130,6 +137,7 @@ export default {
 
   methods: {
     editItem(item) {
+      this.disableFild = true
       this.editedIndex = this.students.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
@@ -151,6 +159,7 @@ export default {
     },
 
     close() {
+      this.disableFild = false
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -159,6 +168,7 @@ export default {
     },
 
     closeDelete() {
+      this.disableFild = false
       this.dialogDelete = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -166,12 +176,20 @@ export default {
       })
     },
 
-    save() {
+    async save() {
+      this.disableFild = false
       // eslint-disable-next-line no-useless-escape
       const regexEmail = /^[a-z0-9._]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i;
 
-      if (this.editedItem.name === '' || this.editedItem.cpf.length !== 11 || !regexEmail.test(this.editedItem.email)) {
+      if (this.editedItem.ra === '' || this.editedItem.name === '' || this.editedItem.cpf.length !== 11 || !regexEmail.test(this.editedItem.email)) {
         return this.showAlert('warning');
+      }
+
+      try {
+        await Students.getStudentByRA(this.editedItem.ra);
+      } catch (error) {
+        console.log(error)
+        return this.showAlert("alreadyExist");
       }
 
       if (this.editedIndex > -1) {
@@ -184,6 +202,7 @@ export default {
         this.updateStudent(updatedStudent, this.editedItem.id);
       } else {
         const newStudent = {
+          RA: this.editedItem.ra,
           Name: this.editedItem.name,
           Email: this.editedItem.email,
           CPF: cpf.format(this.editedItem.cpf),
@@ -211,7 +230,7 @@ export default {
         case 'warning':
           return this.$swal({
             title: 'Opa!',
-            text: 'Verifique se todos os campos estão corretos! Nome, e-mail e CPF (11 digitos)!',
+            text: 'Verifique se todos os campos estão corretos! RA, Nome, e-mail e CPF (11 digitos)!',
             icon: 'warning',
           });
         case 'delete':
@@ -220,6 +239,12 @@ export default {
             text: 'Registro excluído!',
             icon: 'success',
             timer: 1000
+          });
+        case 'alreadyExist':
+          return this.$swal({
+            title: 'Opa!',
+            text: 'Registro Acadêmico já existe, verifique esses dados!',
+            icon: 'warning',
           });
       }
     },

@@ -23,6 +23,12 @@ namespace backend.Repository
       return await _context.Students.Where(student => student.Id == id).FirstOrDefaultAsync();
     }
 
+    public async Task<Students> GetStudentByRa(int id)
+    {
+      return await _context.Students.Where(student => student.RA == id).FirstOrDefaultAsync();
+    }
+
+
     public void CreateStudent(Students student)
     {
       _context.Add(student);

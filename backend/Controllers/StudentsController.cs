@@ -23,6 +23,14 @@ namespace backend.Controllers
       return allStudents.Any() ? Ok(allStudents) : NoContent();
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetStudentByRa(int id)
+    {
+      var student = await _repository.GetStudentByRa(id);
+
+      return student == null ? Ok("Ok") : BadRequest("Registro Acadêmico já existe!");
+    }
+
     [HttpPost]
     public async Task<IActionResult> NewStudents(Students students)
     {

@@ -5,6 +5,10 @@ export default {
     return await api.get('students');
   },
 
+  getStudentByRA: async (id) => {
+    return await api.get(`students/${id}`);
+  },
+
   createStudents: async (data) => {
     return await api.post('students', data);
   },
