@@ -6,7 +6,6 @@ export default {
   },
 
   createStudents: async (data) => {
-    console.log('data', data)
     return await api.post('students', data);
   },
 
@@ -14,7 +13,7 @@ export default {
     return await api.put(`students/${id}`, data);
   },
 
-  deletedStudent: async (id) => {
-    return await api.delete(`students/${id}`);
+  deletedStudent: async (id, student) => {
+    return await api.delete(`students/${id}`, { data: student });
   }
 };
