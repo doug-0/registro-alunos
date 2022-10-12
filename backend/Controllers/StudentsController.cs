@@ -42,6 +42,7 @@ namespace backend.Controllers
 
       student.Name = students.Name ?? student.Name;
       student.Email = students.Email ?? student.Email;
+      student.CPF = students.CPF ?? student.CPF;
 
       _repository.UpdateStudent(student);
 
