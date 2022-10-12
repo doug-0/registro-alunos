@@ -1,5 +1,5 @@
 <template>
-  <v-data-table :headers="headers" :items="students" sort-by="name" class="elevation-1">
+  <v-data-table :headers="headers" :items="students" sort-by="id" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>Lista de Alunos</v-toolbar-title>
@@ -20,17 +20,14 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" label="Nome do aluno"
-                      :rules="[() => !!name || 'Campo obrigatório']" :error-messages="errorMessages">
+                    <v-text-field v-model="editedItem.name" label="Nome do aluno">
                     </v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.email" label="E-mail"
-                      :rules="[() => !!name || 'Campo obrigatório']" :error-messages="errorMessages"></v-text-field>
+                    <v-text-field v-model="editedItem.email" label="E-mail"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.cpf" label="CPF" :rules="[() => !!name || 'Campo obrigatório']"
-                      :error-messages="errorMessages"></v-text-field>
+                    <v-text-field v-model="editedItem.cpf" label="CPF"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -68,16 +65,23 @@
         mdi-delete
       </v-icon>
     </template>
-    <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">
-        Reset
-      </v-btn>
-    </template>
   </v-data-table>
 </template>
 
 <script>
+import Students from '../services/students'
+
 export default {
+  async mounted() {
+    try {
+      const { data } = await Students.getAllStudents();
+
+      return this.students.push(...data);
+    } catch (error) {
+      console.log(error)
+    }
+  },
+
   data: () => ({
     dialog: false,
     dialogDelete: false,
@@ -86,7 +90,7 @@ export default {
         text: 'Registro Acadêmico',
         align: 'start',
         sortable: true,
-        value: 'RA',
+        value: 'id',
       },
       { text: 'Nome', value: 'name' },
       { text: 'E-mail', value: 'email' },
@@ -104,6 +108,8 @@ export default {
       name: '',
       cpf: '',
     },
+    deletedItem: '',
+    renderComponent: false,
   }),
 
   computed: {
@@ -121,83 +127,23 @@ export default {
     },
   },
 
-  created() {
-    this.initialize()
-  },
-
   methods: {
-    initialize() {
-      this.students = [
-        {
-          RA: 101123,
-          name: 'Paula Souza',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101124,
-          name: 'João Silva',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101125,
-          name: 'Marina Miranda',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101126,
-          name: 'Maurício Souza',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101127,
-          name: 'Carlos Antonio',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101128,
-          name: 'Matheus Chaves',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-        {
-          RA: 101129,
-          name: 'Maria Clara',
-          cpf: '121.999.999-99',
-          email: 'email@email.com',
-          actions: 'edit/delete',
-        },
-      ]
-    },
-
     editItem(item) {
-      console.log('passei')
-      console.log('editando item', item)
       this.editedIndex = this.students.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
 
     deleteItem(item) {
-      console.log('deletando item', item)
       this.editedIndex = this.students.indexOf(item)
       this.editedItem = Object.assign({}, item)
+      this.deletedItem = item;
       this.dialogDelete = true
     },
 
     deleteItemConfirm() {
-      console.log('confirmei que deletei')
-      this.students.splice(this.editedIndex, 1)
+      this.deletedStudent(this.deletedItem.id)
+
       this.closeDelete()
     },
 
@@ -224,18 +170,96 @@ export default {
       }
 
       if (this.editedIndex > -1) {
-        Object.assign(this.students[this.editedIndex], this.editedItem)
+        const updatedStudent = {
+          Name: this.editedItem.name,
+          Email: this.editedItem.email,
+          CPF: this.editedItem.cpf,
+        }
+
+        this.updateStudent(updatedStudent, this.editedItem.id);
       } else {
-        this.students.push(this.editedItem)
+        const newStudent = {
+          Name: this.editedItem.name,
+          Email: this.editedItem.email,
+          CPF: this.editedItem.cpf,
+        }
+        this.createStudent(newStudent)
       }
       this.close()
-      return this.showAlert('success');
+    },
+
+    reaload() {
+      window.location.reload()
     },
 
     showAlert(type) {
-      if (type === 'warning') return this.$swal('Opa!', 'Verifique se todos os campos estão corretos!', 'warning');
-      if (type === 'success') return this.$swal('Feito!', 'Registro salvo!', 'success');
-      if (type === 'delete') return this.$swal('Feito!', 'Registro excluído!', 'success');
+      switch (type) {
+        case 'success':
+          return this.$swal({
+            title: 'Feito!',
+            text: 'Registro salvo!',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1000
+          });
+        case 'warning':
+          return this.$swal({
+            title: 'Opa!',
+            text: 'Verifique se todos os campos estão corretos!',
+            icon: 'warning',
+          });
+        case 'delete':
+          return this.$swal({
+            title: 'Feito!',
+            text: 'Registro excluído!',
+            icon: 'success',
+            timer: 1000
+          });
+      }
+    },
+
+    async getStudents() {
+      try {
+        const { data } = await Students.getAllStudents();
+
+        return this.students.push(...data);
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
+    async createStudent(student) {
+      try {
+        await Students.createStudents(student);
+
+        this.showAlert('success');
+        setTimeout(() => this.reaload(), 950)
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    async updateStudent(student, id) {
+      try {
+        await Students.updateStudent(student, id);
+
+        this.showAlert('success');
+        setTimeout(() => this.reaload(), 950)
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    async deletedStudent(id) {
+
+      try {
+        await Students.deletedStudent(id);
+
+        this.showAlert('delete');
+        setTimeout(() => this.reaload(), 950)
+      } catch (error) {
+        console.log(error)
+      }
     }
   },
 }
