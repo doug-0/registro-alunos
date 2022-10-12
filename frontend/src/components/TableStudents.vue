@@ -21,10 +21,17 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" label="Nome do aluno"></v-text-field>
+                    <v-text-field v-model="editedItem.name" label="Nome do aluno"
+                      :rules="[() => !!name || 'Campo obrigatório']" :error-messages="errorMessages">
+                    </v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.cpf" label="CPF"></v-text-field>
+                    <v-text-field v-model="editedItem.email" label="E-mail"
+                      :rules="[() => !!email || 'Campo obrigatório']" :error-messages="errorMessages"></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field v-model="editedItem.cpf" label="CPF" :rules="[() => !!cpf || 'Campo obrigatório']"
+                      :error-messages="errorMessages"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -83,6 +90,7 @@ export default {
         value: 'RA',
       },
       { text: 'Nome', value: 'name' },
+      { text: 'E-mail', value: 'email' },
       { text: 'CPF', value: 'cpf' },
       { text: 'Ações', value: 'actions' },
     ],
@@ -90,6 +98,7 @@ export default {
     editedIndex: -1,
     editedItem: {
       name: '',
+      email: '',
       cpf: '',
     },
     defaultItem: {
@@ -100,7 +109,7 @@ export default {
 
   computed: {
     formTitle() {
-      return this.editedIndex === -1 ? 'New Item' : 'Editar Registro'
+      return this.editedIndex === -1 ? 'Novo Registro' : 'Editar Registro'
     },
   },
 
@@ -124,65 +133,77 @@ export default {
           RA: 101123,
           name: 'Paula Souza',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101124,
           name: 'João Silva',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101125,
           name: 'Marina Miranda',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101126,
           name: 'Maurício Souza',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101127,
           name: 'Carlos Antonio',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101128,
           name: 'Matheus Chaves',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
         {
           RA: 101129,
           name: 'Maria Clara',
           cpf: '121.999.999-99',
+          email: 'email@email.com',
           actions: 'edit/delete',
         },
       ]
     },
 
     editItem(item) {
+      console.log('passei')
+      console.log('editando item', item)
       this.editedIndex = this.students.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
 
     deleteItem(item) {
+      console.log('deletando item', item)
       this.editedIndex = this.students.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
     deleteItemConfirm() {
+      console.log('confirmei que deletei')
       this.students.splice(this.editedIndex, 1)
       this.closeDelete()
     },
 
     close() {
+      console.log('fechar')
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -191,6 +212,7 @@ export default {
     },
 
     closeDelete() {
+      console.log('fechar delete')
       this.dialogDelete = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -199,6 +221,10 @@ export default {
     },
 
     save() {
+      if (this.editedItem.name === '' || this.editedItem.email === '' || this.editedItem.cpf === '') {
+        return console.log('campos vazios')
+      }
+
       if (this.editedIndex > -1) {
         Object.assign(this.students[this.editedIndex], this.editedItem)
       } else {
