@@ -32,7 +32,7 @@
                     <v-text-field v-model="editedItem.email" label="E-mail"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.cpf" label="CPF"></v-text-field>
+                    <v-text-field v-model="editedItem.cpf" label="CPF" :disabled="disableFild"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -177,22 +177,30 @@ export default {
     },
 
     async save() {
-      this.disableFild = false
       // eslint-disable-next-line no-useless-escape
       const regexEmail = /^[a-z0-9._]+@[a-z0-9]+\.[a-z]+(\.[a-z]+)?$/i;
-
-      if (this.editedItem.ra === '' || this.editedItem.name === '' || this.editedItem.cpf.length !== 11 || !regexEmail.test(this.editedItem.email)) {
+      console.log(cpf.isValid(this.editedItem.cpf))
+      console.log(cpf.format(this.editedItem.cpf))
+      if (
+        this.editedItem.ra === ''
+        || this.editedItem.name === ''
+        || (this.editedItem.cpf.length !== 11 && this.editedItem.cpf.length !== 14)
+        || !regexEmail.test(this.editedItem.email)
+      ) {
         return this.showAlert('warning');
       }
 
       try {
-        await Students.getStudentByRA(this.editedItem.ra);
+        if (this.disableFild != true) {
+          await Students.getStudentByRA(this.editedItem.ra);
+        }
       } catch (error) {
         console.log(error)
         return this.showAlert("alreadyExist");
       }
 
       if (this.editedIndex > -1) {
+        this.disableFild = true
         const updatedStudent = {
           Name: this.editedItem.name,
           Email: this.editedItem.email,
@@ -201,6 +209,7 @@ export default {
 
         this.updateStudent(updatedStudent, this.editedItem.id);
       } else {
+        this.disableFild = true
         const newStudent = {
           RA: this.editedItem.ra,
           Name: this.editedItem.name,
