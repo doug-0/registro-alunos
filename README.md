@@ -15,7 +15,7 @@ Com as rotas:
 
 **Front-end:** Vuejs, Vuetify.
 
-**Back-end:** C#, Entity framework.
+**Back-end:** C#, .NET 6.0,Entity framework.
 
 
 
