@@ -27,10 +27,10 @@
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.email" label="E-mail"
-                      :rules="[() => !!email || 'Campo obrigatório']" :error-messages="errorMessages"></v-text-field>
+                      :rules="[() => !!name || 'Campo obrigatório']" :error-messages="errorMessages"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.cpf" label="CPF" :rules="[() => !!cpf || 'Campo obrigatório']"
+                    <v-text-field v-model="editedItem.cpf" label="CPF" :rules="[() => !!name || 'Campo obrigatório']"
                       :error-messages="errorMessages"></v-text-field>
                   </v-col>
                 </v-row>
@@ -203,7 +203,6 @@ export default {
     },
 
     close() {
-      console.log('fechar')
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -212,17 +211,17 @@ export default {
     },
 
     closeDelete() {
-      console.log('fechar delete')
       this.dialogDelete = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
       })
+      return this.showAlert('delete');
     },
 
     save() {
       if (this.editedItem.name === '' || this.editedItem.email === '' || this.editedItem.cpf === '') {
-        return console.log('campos vazios')
+        return this.showAlert('warning');
       }
 
       if (this.editedIndex > -1) {
@@ -231,7 +230,14 @@ export default {
         this.students.push(this.editedItem)
       }
       this.close()
+      return this.showAlert('success');
     },
+
+    showAlert(type) {
+      if (type === 'warning') return this.$swal('Opa!', 'Verifique se todos os campos estão corretos!', 'warning');
+      if (type === 'success') return this.$swal('Feito!', 'Registro salvo!', 'success');
+      if (type === 'delete') return this.$swal('Feito!', 'Registro excluído!', 'success');
+    }
   },
 }
 </script>
